@@ -27,24 +27,38 @@ type Sudoku = [[Symbol]]
 
                     
 solveSudoku :: Monad m => Sudoku -> m Sudoku              
-solveSudoku p = case solveNext p of
-                    Just p' -> return p'
-                    Nothing -> fail "This puzzle is unsolvable!"
-
+solveSudoku p = case solveNext =<< checkInputError of
+                      Just p' -> return p'
+                      Nothing -> fail "This puzzle is unsolvable!"
+                where 
+                      -- Not very optimal, but it's a one-off check to make sure
+                      -- the grid doesn't contain mistakes before we even start.
+                      -- solveNext won't add duplicates in any row, col or block,
+                      -- but it can get confused if duplicates are already there.
+                      checkInputError = justIf noDuplicates p
+                      noDuplicates = (all $ all allUnique) $
+                                          map ($p) [blocks, rows, cols]
+                      allUnique cs = filledIn cs == (nub $ filledIn cs)
+                      filledIn = filter (/=0)
+                
 
 solveNext :: Sudoku -> Maybe Sudoku   
 solveNext p 
-    | completed p  = Just p -- already solved
-    | unused == []  = Nothing -- not solved but no valid symbols left to try
-    | otherwise     = find completed attempts
+    | completed p                = Just p -- already solved
+    | unusedNear nextBlank == [] = Nothing -- not solved but no valid symbols left to try
+    | otherwise                  = find completed attempts
     where
-        attempts            = catMaybes $ map (solveNext . tryValue) unused
+        attempts            = catMaybes $ map (solveNext . tryValue) $ unusedNear nextBlank
         tryValue            = setCell p nextBlank
-        nextBlank           = head blanks
+        -- the next cell should be the one with the fewest options left to try
+        -- It might not make a huge difference, so should do some perf tests
+        nextBlank           = minimumBy (\a b ->
+                                            compare (length $ unusedNear a) 
+                                                    (length $ unusedNear b) ) blanks 
         blanks              = [(i,j) | i <- [0..8], j <- [0..8], cell p (i, j) == 0]
-        unused              = [1..9] \\ neighbours nextBlank                               
+        unusedNear c        = [1..9] \\ neighbours c
         neighbours (x, y)   = row p y ++ col p x ++ block p (x, y)
- 
+
 completed :: Sudoku -> Bool
 completed = (notElem 0) . concat 
 
@@ -62,13 +76,22 @@ cell s (x, y) = s !! y !! x
 row :: Sudoku -> Int -> [Symbol]
 row s n = s !! n
 
+rows :: Sudoku -> [[Symbol]]
+rows = id 
+
 col :: Sudoku -> Int -> [Symbol]
 col s n = map (!!n) s
+
+cols :: Sudoku -> [[Symbol]]
+cols = transpose
 
 block :: Sudoku -> (Int,Int) -> [Symbol]
 block s (x, y) = concat $ map (slice r 3) $ (slice c 3) s
         where r = x - (x `mod` 3)
               c = y - (y `mod` 3)
+
+blocks :: Sudoku -> [[Symbol]]
+blocks s = [block s (x,y) | x <- [0,3,6], y <- [0,3,6]]          
 
 setCell :: Sudoku -> (Int,Int) -> Symbol -> Sudoku
 setCell s (x, y) n = 
@@ -76,11 +99,6 @@ setCell s (x, y) n =
     where replaceAt l i v
             | otherwise = take i l ++ [v] ++ drop (i+1) l
           row' = replaceAt (s !! y) x n
-
-
-
-slice :: Int -> Int -> [a] -> [a]
-slice from len = take len . drop from
 
 
 ------------------------------------------------------------------------------
@@ -118,4 +136,19 @@ charToCell c = case c of
                 
                 
                 
+
+
+------------------------------------------------------------------------------
+--
+--  general purpose utils
+-- 
+------------------------------------------------------------------------------
+
+
+slice :: Int -> Int -> [a] -> [a]
+slice from len = take len . drop from
+
+
+justIf :: Bool -> a -> Maybe a
+justIf p v = if p then Just v else Nothing
 
