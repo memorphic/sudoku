@@ -22,8 +22,10 @@ import Sudoku
 
 main :: IO ()
 main = do
-    args        <- getArgs
-    rawData     <- readFile (args !! 0) 
-    sudoku      <- readSudoku rawData
-    solution    <- solveSudoku sudoku
-    putStr $ showSudoku solution
+    args <- getArgs
+    if null args
+        then error "One argument required (file name)"
+        else do rawData     <- readFile (args !! 0) 
+                sudoku      <- readSudoku rawData
+                solution    <- solveSudoku sudoku
+                putStr $ showSudoku solution
