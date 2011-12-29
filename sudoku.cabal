@@ -1,0 +1,52 @@
+name: sudoku
+version: 0.0.1
+cabal-version: -any
+build-type: Simple
+license: AllRightsReserved
+license-file: /Users/peter/Documents/haskell/sudoku/license.txt
+copyright: 2011
+maintainer: Peter Hall
+build-depends: base -any, base -any, base -any, base -any,
+               base -any, base -any, base -any, base -any
+stability:
+homepage:
+package-url:
+bug-reports: Peter Hall
+synopsis: Sudoku Solver
+description: .
+category:
+author: Peter Hall
+tested-with: GHC -any
+data-files:
+data-dir: /Users/peter/Documents/haskell/sudoku/data
+extra-source-files:
+extra-tmp-files:
+ 
+executable: sudoku
+main-is: Main.hs
+buildable: True
+build-tools:
+cpp-options:
+cc-options:
+ld-options:
+pkgconfig-depends:
+frameworks:
+c-sources:
+default-language:
+other-languages:
+default-extensions:
+other-extensions:
+extensions:
+extra-libraries:
+extra-lib-dirs:
+includes:
+install-includes:
+include-dirs:
+hs-source-dirs: src
+other-modules: Main
+ghc-prof-options:
+ghc-shared-options:
+ghc-options:
+hugs-options:
+nhc98-options:
+jhc-options:
