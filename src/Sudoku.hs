@@ -50,11 +50,9 @@ solveNext p
     where
         attempts            = catMaybes $ map (solveNext . tryValue) $ unusedNear nextBlank
         tryValue            = setCell p nextBlank
-        -- the next cell should be the one with the fewest options left to try
-        -- It might not make a huge difference, so should do some perf tests
-        nextBlank           = minimumBy (\a b ->
-                                            compare (length $ unusedNear a) 
-                                                    (length $ unusedNear b) ) blanks 
+        -- the next cell should be the one with the fewest options left to try, which almost
+        -- doubles the speed, since it doesn't have to try as many paths
+        nextBlank           = minimumWith (length . unusedNear) blanks 
         blanks              = [(i,j) | i <- [0..8], j <- [0..8], cell p (i, j) == 0]
         unusedNear c        = [1..9] \\ neighbours c
         neighbours (x, y)   = row p y ++ col p x ++ block p (x, y)
@@ -115,8 +113,8 @@ readSudoku s =
         gridRows        = map (filter isValidChar) $ lines s   
         grid            = removeBadLines $ map (catMaybes . map charToCell) gridRows
     in  if map length grid == replicate 9 9
-        then return grid 
-        else fail "Incorrect puzzle dimensions"
+            then return grid 
+            else fail "Incorrect puzzle dimensions"
         
  
 showSudoku :: Sudoku -> String
@@ -151,4 +149,9 @@ slice from len = take len . drop from
 
 justIf :: Bool -> a -> Maybe a
 justIf p v = if p then Just v else Nothing
+
+-- Similar to minimumBy but items are compared after applying the ordering function
+-- to each one, rather than using a function that returns an ordering for each pair 
+minimumWith :: Ord n => (a -> n) -> [a] -> a
+minimumWith f = minimumBy (\a b -> f a `compare` f b)
 

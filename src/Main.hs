@@ -17,15 +17,29 @@ module Main (
 ) where
 
 
-import System.Environment
+import System.Environment (getArgs)
 import Sudoku
+import Data.Time.Clock.POSIX (getPOSIXTime)
 
 main :: IO ()
 main = do
     args <- getArgs
-    if null args
-        then error "One argument required (file name)"
-        else do rawData     <- readFile (args !! 0) 
-                sudoku      <- readSudoku rawData
-                solution    <- solveSudoku sudoku
-                putStr $ showSudoku solution
+    logTimeOf $ if null args
+                    then error "At least one argument required (file names)"
+                    else mapM_ each args
+    where each a = logTimeOf $ catch (loadAndSolve a)
+                                     (\err -> putStrLn $ show err)
+
+loadAndSolve :: String -> IO ()
+loadAndSolve file = do putStrLn $ "Loading sudoko: " ++ file ++ ""
+                       rawData <- readFile file
+                       sudoku <- readSudoku rawData
+                       solution <- solveSudoku sudoku
+                       putStr $ showSudoku solution
+
+
+logTimeOf :: IO () -> IO ()
+logTimeOf action = do t0 <- getPOSIXTime
+                      action
+                      t1 <- getPOSIXTime
+                      putStrLn $ "(In " ++ show (t1-t0) ++ ")"
