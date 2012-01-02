@@ -129,6 +129,8 @@ cellToChar c = case c of
 charToCell :: Monad m => Char -> m Symbol
 charToCell c = case c of 
                 '*' -> return 0
+                '.' -> return 0
+                '_' -> return 0
                 n | n `elem` ['0'..'9'] -> return $ digitToInt n
                   | otherwise           -> fail $ "Unexpected digit: " ++ [n]
                 

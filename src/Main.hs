@@ -34,6 +34,7 @@ loadAndSolve :: String -> IO ()
 loadAndSolve file = do putStrLn $ "Loading sudoko: " ++ file ++ ""
                        rawData <- readFile file
                        sudoku <- readSudoku rawData
+                       putStrLn "Solving..."
                        solution <- solveSudoku sudoku
                        putStr $ showSudoku solution
 
