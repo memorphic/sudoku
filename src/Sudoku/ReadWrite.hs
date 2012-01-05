@@ -8,7 +8,7 @@
 -- Stability   :  
 -- Portability :  
 --
--- common functions for reading and displaying Sudoku grids
+-- Functions for reading and displaying Sudoku grids
 --
 -----------------------------------------------------------------------------
 

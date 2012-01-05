@@ -41,6 +41,7 @@ solveSudoku s = case checkInputError s >> doSolve of
     
     
 -- actual algorithm
+solveNext :: [((Int,Int,Int),Int)] -> [(Int,Int,Int)] -> Maybe [((Int,Int,Int),Int)]
 solveNext hints [] = Just hints
 solveNext hints (r@(x,y,b):rem) = case catMaybes $ map try remaining of 
                                     [] -> Nothing

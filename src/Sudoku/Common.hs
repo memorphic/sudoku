@@ -35,8 +35,6 @@ type Sudoku = [[Symbol]]
 
 -- Not very optimal, but it's a one-off check to make sure
 -- the grid doesn't contain mistakes before we even start.
--- solveNext won't add duplicates in any row, col or block,
--- but it can get confused if duplicates are already there.
 checkInputError :: Sudoku -> Maybe Sudoku
 checkInputError p = justIf noDuplicates p
                       where noDuplicates = (all $ all allUnique) $
