@@ -8,7 +8,9 @@
 -- Stability   :  
 -- Portability :  
 --
--- |
+-- Run with a list of files containing sudokus, to solve
+-- Optionally the first argument can be -s N where N is 1 or 2, to choose 
+--  wich algorithm to choose to solve the sudoku
 --
 -----------------------------------------------------------------------------
 
@@ -18,25 +20,36 @@ module Main (
 
 
 import System.Environment (getArgs)
-import Sudoku
+import qualified Sudoku.Solver1 as S1
+import qualified Sudoku.Solver2 as S2
+import Sudoku.ReadWrite
 import Data.Time.Clock.POSIX (getPOSIXTime)
 
 main :: IO ()
 main = do
     args <- getArgs
-    logTimeOf $ if null args
-                    then error "At least one argument required (file names)"
-                    else mapM_ each args
-    where each a = logTimeOf $ catch (loadAndSolve a)
-                                     (\err -> putStrLn $ show err)
+    let (impl, files, runTest) = case args of 
+                        ("-s":n:rest)         -> (read n, rest, False)
+                        justFiles             -> (1, justFiles, False)  
+                        
+        doRun a i = logTimeOf $ catch (loadAndSolve a i)
+                                   (\err -> putStrLn $ show err)
 
-loadAndSolve :: String -> IO ()
-loadAndSolve file = do putStrLn $ "Loading sudoko: " ++ file ++ ""
-                       rawData <- readFile file
-                       sudoku <- readSudoku rawData
-                       putStrLn "Solving..."
-                       solution <- solveSudoku sudoku
-                       putStr $ showSudoku solution
+    logTimeOf $ mapM_ (doRun impl) files
+
+
+getSolver i = case i of
+    1 -> S1.solveSudoku
+    2 -> S2.solveSudoku
+    otherwise -> error $ "I don't know that solver: " ++ show i
+
+loadAndSolve :: Int -> String -> IO ()
+loadAndSolve impl file = do putStrLn $ "Loading sudoko: " ++ file ++ ""
+                            rawData <- readFile file
+                            sudoku <- readSudoku rawData
+                            putStrLn $ "Solving with solver " ++ show impl ++ "..."
+                            solution <- (getSolver impl) sudoku
+                            putStr $ showSudoku solution
 
 
 logTimeOf :: IO () -> IO ()
@@ -44,3 +57,6 @@ logTimeOf action = do t0 <- getPOSIXTime
                       action
                       t1 <- getPOSIXTime
                       putStrLn $ "(In " ++ show (t1-t0) ++ ")"
+                      
+                      
+                      
