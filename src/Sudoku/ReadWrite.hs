@@ -1,8 +1,8 @@
 -----------------------------------------------------------------------------
 --
 -- Module      :  Sudoku.ReadWrite
--- Copyright   :  2011
--- License     :  AllRightsReserved
+-- Copyright   :  Peter Hall 2012
+-- License     :  MIT
 --
 -- Maintainer  :  Peter Hall
 -- Stability   :  
@@ -51,7 +51,8 @@ charToCell c = case c of
                 '*' -> return 0
                 '.' -> return 0
                 '_' -> return 0
-                n | n `elem` ['0'..'9'] -> return $ digitToInt n
+                '0' -> return 0
+                n | n `elem` ['1'..'9'] -> return $ digitToInt n
                   | otherwise           -> fail $ "Unexpected digit: " ++ [n]
                 
                 

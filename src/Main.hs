@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------------
 --
 -- Module      :  Main
--- Copyright   :  Peter Hall 2011
+-- Copyright   :  Peter Hall 2012
 -- License     :  MIT
 --
 -- Maintainer  :  Peter Hall
@@ -20,6 +20,7 @@ module Main (
 
 
 import System.Environment (getArgs)
+import Sudoku.Common
 import qualified Sudoku.Solver1 as S1
 import qualified Sudoku.Solver2 as S2
 import Sudoku.ReadWrite
@@ -29,12 +30,12 @@ main :: IO ()
 main = do
     args <- getArgs
     let (impl, files, runTest) = case args of 
-                        ("-s":n:rest)         -> (read n, rest, False)
-                        justFiles             -> (1, justFiles, False)  
+                        ("-s":n:rest)   -> (read n, rest, False)
+                        justFiles       -> (1, justFiles, False)  
                         
-        doRun a i = logTimeOf $ catch (loadAndSolve a i)
-                                   (\err -> putStrLn $ show err)
-
+        doRun a i =  logTimeOf $ catch (loadAndSolve a i)
+                                       (\err -> putStrLn $ show err)
+                                                         
     logTimeOf $ mapM_ (doRun impl) files
 
 
@@ -49,14 +50,18 @@ loadAndSolve impl file = do putStrLn $ "Loading sudoko: " ++ file ++ ""
                             sudoku <- readSudoku rawData
                             putStrLn $ "Solving with solver " ++ show impl ++ "..."
                             solution <- (getSolver impl) sudoku
-                            putStr $ showSudoku solution
+                            if checkSolved solution && checkHintsUnchanged sudoku solution 
+                              then putStr $ showSudoku solution
+                              else error "The solution is wrong!!!"
+                           
 
 
-logTimeOf :: IO () -> IO ()
+logTimeOf :: IO a -> IO a
 logTimeOf action = do t0 <- getPOSIXTime
-                      action
+                      r  <- action
                       t1 <- getPOSIXTime
                       putStrLn $ "(In " ++ show (t1-t0) ++ ")"
+                      return r
                       
                       
                       

@@ -42,11 +42,11 @@ includes:
 install-includes:
 include-dirs:
 hs-source-dirs: src
-other-modules: Sudoku.Common Sudoku.Solver2 Sudoku.Solver1
-               Sudoku.ReadWrite Main
+other-modules: Main Sudoku.Common Sudoku.ReadWrite Sudoku.Solver1
+               Sudoku.Solver2
 ghc-prof-options:
 ghc-shared-options:
-ghc-options:
+ghc-options: -O3
 hugs-options:
 nhc98-options:
 jhc-options:

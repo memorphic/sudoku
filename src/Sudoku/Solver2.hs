@@ -1,8 +1,8 @@
 -----------------------------------------------------------------------------
 --
 -- Module      :  Sudoku.Solver2
--- Copyright   :  2011
--- License     :  AllRightsReserved
+-- Copyright   :  Peter Hall 2012
+-- License     :  MIT
 --
 -- Maintainer  :  Peter Hall
 -- Stability   :  
@@ -22,26 +22,26 @@ module Sudoku.Solver2 (
 import Data.List
 import Data.Char
 import Data.Maybe
-import Sudoku.Common (checkInputError)
+import Sudoku.Common
 
 
-solveSudoku :: Monad m =>  [[Int]] -> m [[Int]]
+solveSudoku :: Monad m => InitialGrid -> m Solution
 solveSudoku s = case checkInputError s >> doSolve of
                     Nothing -> fail "This puzzle is unsolvable!"
                     Just p -> return $ pointsToGrid p
     where 
         doSolve = solveNext hints remaining
+        -- this stuff is just to convert the grid into the correct form to begin
         remaining = map fst $ filter ((==0).snd) $ coordsWithValues
         hints = filter ((/= 0).snd) $ coordsWithValues
         coordsWithValues = map (\c@(x,y,_) -> (c, cval x y)) allCells
         cval i j = s !! i !! j
-        
         allCells = [(i,j,block i j) | i <- [0..8], j <- [0..8]]
         block i j = 3 * (i `div` 3) + (j `div` 3)
     
     
 -- actual algorithm
-solveNext :: [((Int,Int,Int),Int)] -> [(Int,Int,Int)] -> Maybe [((Int,Int,Int),Int)]
+solveNext :: [((Int,Int,Int),Symbol)] -> [(Int,Int,Int)] -> Maybe [((Int,Int,Int),Symbol)]
 solveNext hints [] = Just hints
 solveNext hints (r@(x,y,b):rem) = case catMaybes $ map try remaining of 
                                     [] -> Nothing
@@ -51,8 +51,8 @@ solveNext hints (r@(x,y,b):rem) = case catMaybes $ map try remaining of
                                  isNeighbour ((x',y',b'),_) = x==x' || y==y' || b==b'
 
 
--- this is just called once to construct the grid at the end
-pointsToGrid :: [((Int,Int,Int), Int)] -> [[Int]]
+-- this is just called once to reconstruct the grid at the end
+pointsToGrid :: [((Int,Int,Int), Symbol)] -> Solution
 pointsToGrid ps = chunksOf 9 $ map snd $ sortBy (\((x,y,_),_) ((x',y',_),_) 
                                                     -> if x == x' 
                                                           then compare y y' 

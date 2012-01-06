@@ -1,8 +1,8 @@
 -----------------------------------------------------------------------------
 --
 -- Module      :  Sudoku.Solver1
--- Copyright   :  2011
--- License     :  AllRightsReserved
+-- Copyright   :  Peter Hall 2012
+-- License     :  MIT
 --
 -- Maintainer  :  Peter Hall
 -- Stability   :  
@@ -26,14 +26,14 @@ import Data.List
 import Sudoku.Common
 
                     
-solveSudoku :: Monad m => Sudoku -> m Sudoku              
+solveSudoku :: Monad m => InitialGrid -> m Solution              
 solveSudoku p = case solveNext =<< checkInputError p of
                   Just p' -> return p'
                   Nothing -> fail "This puzzle is unsolvable!"
 
                 
 
-solveNext :: Sudoku -> Maybe Sudoku   
+solveNext :: Sudoku -> Maybe Sudoku
 solveNext p 
     | completed p                = Just p -- already solved
     | unusedNear nextBlank == [] = Nothing -- not solved but no valid symbols left to try
